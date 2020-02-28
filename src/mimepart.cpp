@@ -145,8 +145,24 @@ void MimePart::prepare()
     /* Content-Type */
     mimeString.append("Content-Type: ").append(cType);
 
-    if (cName != "")
-        mimeString.append("; name=\"").append(cName).append("\"");
+	if (cName != "")
+	{
+		mimeString.append("; name=\"");
+
+		switch (cEncoding)
+		{
+		case MimePart::Base64:
+			mimeString += "=?utf-8?B?" + QByteArray().append(cName).toBase64() + "?=";
+			break;
+		case MimePart::QuotedPrintable:
+			mimeString += " =?utf-8?Q?" + QuotedPrintable::encode(QByteArray().append(cName)).replace(' ', "_").replace(':', "=3A") + "?=";
+			break;
+		default:
+			mimeString += cName;
+		}
+
+		mimeString.append("\"");
+	}
 
     if (cCharset != "")
         mimeString.append("; charset=").append(cCharset);
